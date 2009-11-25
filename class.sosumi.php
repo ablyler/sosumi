@@ -16,6 +16,7 @@
 
     class Sosumi
     {
+        public $authenticated; // True if we logged in successfully
         public $devices;   // An array of all devices on this MobileMe account
         private $lastURL;  // The previous URL as visited by curl
         private $tmpFile;  // Where we store our cookies
@@ -24,6 +25,7 @@
 
         public function __construct($mobile_me_username, $mobile_me_password)
         {
+            $this->authenticated = false;
             $this->tmpFile = tempnam('/tmp', 'sosumi');
             $this->lsc     = array();
             $this->devices = array();
@@ -48,14 +50,10 @@
             $headers = array('X-Mobileme-Version: 1.0');
             $html = $this->curlGet('https://secure.me.com/wo/WebObjects/Account2.woa?lang=en&anchor=findmyiphone', $this->lastURL, $headers);
 
-            $this->getDevices();
-	}
-
-        public function __destruct() {
-                if (file_exists($this->tmpFile))
-                {
-                        unlink($this->tmpFile);
-                }
+            if (count ($this->lsc) > 0) {
+                $this->authenticated = true;
+                $this->getDevices();
+            }
         }
 
         public function __destruct()
